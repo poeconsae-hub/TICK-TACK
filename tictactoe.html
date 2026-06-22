@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            background: linear-gradient(135deg, #0a0a0a, #1a0a2e, #0d0d0d);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+        }
+        .container {
+            text-align: center;
+            padding: 2rem;
+        }
+        h1 {
+            color: #39ff14;
+            font-size: 2.5rem;
+            margin-bottom: 1.5rem;
+            text-shadow: 0 0 20px rgba(57, 255, 20, 0.6), 0 0 40px rgba(57, 255, 20, 0.3);
+        }
+        .turn {
+            color: #b388ff;
+            font-size: 1.2rem;
+            margin-bottom: 1.5rem;
+            min-height: 2rem;
+            text-shadow: 0 0 10px rgba(179, 136, 255, 0.4);
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 8px;
+            background: rgba(57, 255, 20, 0.08);
+            padding: 8px;
+            border-radius: 16px;
+            margin: 0 auto;
+            box-shadow: 0 0 40px rgba(57, 255, 20, 0.2), inset 0 0 40px rgba(179, 136, 255, 0.05);
+        }
+        .cell {
+            background: rgba(20, 20, 30, 0.9);
+            border: 1px solid rgba(57, 255, 20, 0.15);
+            border-radius: 8px;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .cell:hover { background: rgba(57, 255, 20, 0.1); border-color: rgba(57, 255, 20, 0.4); }
+        .cell.x { color: #39ff14; text-shadow: 0 0 20px rgba(57, 255, 20, 0.8), 0 0 40px rgba(57, 255, 20, 0.4); }
+        .cell.o { color: #b388ff; text-shadow: 0 0 20px rgba(179, 136, 255, 0.8), 0 0 40px rgba(179, 136, 255, 0.4); }
+        .cell.win { background: rgba(57, 255, 20, 0.2) !important; border-color: #39ff14 !important; }
+        .restart {
+            margin-top: 2rem;
+            padding: 12px 36px;
+            font-size: 1rem;
+            border: 1px solid rgba(57, 255, 20, 0.3);
+            border-radius: 8px;
+            background: rgba(20, 20, 30, 0.9);
+            color: #39ff14;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 600;
+            text-shadow: 0 0 10px rgba(57, 255, 20, 0.4);
+        }
+        .restart:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(57, 255, 20, 0.4);
+            border-color: #39ff14;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Tic Tac Toe</h1>
+        <div class="turn" id="turn">Player X's turn</div>
+        <div class="board" id="board">
+            <button class="cell" data-index="0"></button>
+            <button class="cell" data-index="1"></button>
+            <button class="cell" data-index="2"></button>
+            <button class="cell" data-index="3"></button>
+            <button class="cell" data-index="4"></button>
+            <button class="cell" data-index="5"></button>
+            <button class="cell" data-index="6"></button>
+            <button class="cell" data-index="7"></button>
+            <button class="cell" data-index="8"></button>
+        </div>
+        <button class="restart" onclick="restartGame()">Restart Game</button>
+    </div>
+    <script>
+        const boardEl = document.getElementById('board');
+        const turnEl = document.getElementById('turn');
+        const cells = document.querySelectorAll('.cell');
+        let board = Array(9).fill(null);
+        let currentPlayer = 'X';
+        let gameActive = true;
+
+        const winPatterns = [
+            [0,1,2], [3,4,5], [6,7,8],
+            [0,3,6], [1,4,7], [2,5,8],
+            [0,4,8], [2,4,6]
+        ];
+
+        function checkWinner() {
+            for (const pattern of winPatterns) {
+                const [a, b, c] = pattern;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    pattern.forEach(i => cells[i].classList.add('win'));
+                    return board[a];
+                }
+            }
+            return board.every(cell => cell !== null) ? 'draw' : null;
+        }
+
+        function handleClick(e) {
+            if (!gameActive) return;
+            const index = e.currentTarget.dataset.index;
+            if (board[index]) return;
+
+            board[index] = currentPlayer;
+            const cell = e.currentTarget;
+            cell.textContent = currentPlayer;
+            cell.classList.add(currentPlayer.toLowerCase());
+
+            const result = checkWinner();
+            if (result) {
+                gameActive = false;
+                if (result === 'draw') {
+                    turnEl.textContent = "It's a draw!";
+                } else {
+                    turnEl.textContent = `Player ${result} wins!`;
+                }
+                return;
+            }
+
+            currentPlayer = currentPlayer === 'X' ? 'O' : 'X';
+            turnEl.textContent = `Player ${currentPlayer}'s turn`;
+        }
+
+        function restartGame() {
+            board = Array(9).fill(null);
+            currentPlayer = 'X';
+            gameActive = true;
+            turnEl.textContent = "Player X's turn";
+            cells.forEach(cell => {
+                cell.textContent = '';
+                cell.classList.remove('x', 'o', 'win');
+            });
+        }
+
+        cells.forEach(cell => cell.addEventListener('click', handleClick));
+    </script>
+</body>
+</html>
